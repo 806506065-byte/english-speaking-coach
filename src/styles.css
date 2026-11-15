@@ -1444,7 +1444,7 @@ select {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 90;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -1490,6 +1490,336 @@ select {
 }
 
 /* ============================================================
+   Range slider & voice list (settings)
+   ============================================================ */
+.range {
+  width: 100%;
+  height: 22px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-3);
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.range-value {
+  float: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.voice-tip {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid #c7d9f5;
+  background: #eef4fe;
+  color: #2f4a78;
+  font-size: 12.2px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Phone-call layer
+   ============================================================ */
+.call-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 26px;
+  background: radial-gradient(1100px 620px at 50% -10%, #2c3468 0%, #16193a 52%, #0b0e20 100%);
+  animation: callIn 0.24s ease;
+}
+
+@keyframes callIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.call-card {
+  position: relative;
+  width: min(600px, 100%);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  color: #eef1ff;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.call-close {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #d7dbf5;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 15px;
+}
+
+.call-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.call-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.call-head h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.2px;
+}
+
+.call-head .call-role {
+  font-size: 12.5px;
+  color: #9aa3d4;
+}
+
+.call-timer {
+  font-size: 12.5px;
+  letter-spacing: 2px;
+  color: #8f97c9;
+  font-variant-numeric: tabular-nums;
+}
+
+.call-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0 2px;
+}
+
+.call-orb {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 60px;
+  background: linear-gradient(140deg, #6d5efc, #4f46e5);
+  box-shadow: 0 22px 60px rgba(109, 94, 252, 0.45);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.call-orb.listening {
+  background: linear-gradient(140deg, #22b8cf, #0e7490);
+  box-shadow: 0 22px 60px rgba(34, 184, 207, 0.45);
+}
+
+.call-orb.thinking {
+  background: linear-gradient(140deg, #f59e0b, #d97706);
+  box-shadow: 0 22px 60px rgba(245, 158, 11, 0.4);
+}
+
+.call-orb.speaking::before,
+.call-orb.speaking::after,
+.call-orb.listening::before,
+.call-orb.listening::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  animation: callPulse 2s infinite ease-out;
+}
+
+.call-orb.speaking::after,
+.call-orb.listening::after {
+  animation-delay: 0.9s;
+}
+
+@keyframes callPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+.call-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c7cdf0;
+}
+
+.call-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 22px;
+}
+
+.call-wave i {
+  width: 4px;
+  border-radius: 3px;
+  background: #8b93d8;
+  height: 6px;
+  transition: height 0.2s ease, background 0.2s ease;
+}
+
+.call-wave.on i {
+  background: #7dd3fc;
+  animation: callBar 0.9s infinite ease-in-out;
+}
+
+@keyframes callBar {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.call-captions {
+  width: 100%;
+  min-height: 132px;
+  max-height: 30vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  scroll-behavior: smooth;
+}
+
+.call-line {
+  font-size: 14px;
+  line-height: 1.62;
+  word-break: break-word;
+}
+
+.call-line .who {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #8f97c9;
+  margin-bottom: 3px;
+}
+
+.call-line.ai .txt {
+  color: #ffffff;
+}
+
+.call-line.user {
+  text-align: right;
+}
+
+.call-line.user .txt {
+  color: #b9c4ff;
+}
+
+.call-line.live .txt {
+  color: #7dd3fc;
+  font-style: italic;
+}
+
+.call-hint {
+  font-size: 12.2px;
+  line-height: 1.6;
+  color: #8f97c9;
+  text-align: center;
+}
+
+.call-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.call-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.call-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px);
+}
+
+.call-btn.active {
+  background: #fff;
+  color: #16193a;
+}
+
+.call-btn.hangup {
+  width: 66px;
+  height: 66px;
+  background: #dc2626;
+  box-shadow: 0 12px 30px rgba(220, 38, 38, 0.45);
+}
+
+.call-btn.hangup:hover {
+  background: #b91c1c;
+}
+
+.call-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.call-caption-toggle {
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 1180px) {
@@ -1498,6 +1828,7 @@ select {
     height: auto;
   }
   .rail {
+
     height: auto;
   }
   .convo-main {

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
 import SettingsModal from './components/SettingsModal.jsx'
+import CallMode from './components/CallMode.jsx'
 import Home from './views/Home.jsx'
 import Practice from './views/Practice.jsx'
 import Report from './views/Report.jsx'
@@ -8,7 +9,7 @@ import Drill from './views/Drill.jsx'
 import Phrasebook from './views/Phrasebook.jsx'
 import { getScenario } from './data/scenarios.js'
 import { DEFAULT_BASE_URL, DEFAULT_MODEL } from './lib/engine.js'
-import { primeVoices, speak } from './lib/speech.js'
+import { primeVoices, speakText } from './lib/speech.js'
 import { load, save, uid } from './lib/storage.js'
 
 const DEFAULT_SETTINGS = {
@@ -20,6 +21,12 @@ const DEFAULT_SETTINGS = {
   autoListen: false,
   showZh: true,
   level: 'intermediate',
+  ttsEngine: 'native',
+  ttsVoiceURI: '',
+  ttsRate: 1,
+  ttsPitch: 1,
+  ttsCloudVoice: 'nova',
+  ttsModel: 'tts-1',
 }
 
 export default function App() {
@@ -30,6 +37,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(null)
   const [restartKey, setRestartKey] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [callOpen, setCallOpen] = useState(false)
   const [toast, setToast] = useState('')
 
   useEffect(() => save('settings', settings), [settings])
@@ -62,6 +70,8 @@ export default function App() {
   const recordSession = useCallback((record) => {
     setSessions((prev) => [record, ...prev].slice(0, 80))
   }, [])
+
+  const handleSpeak = useCallback((text) => speakText(text, settings), [settings])
 
   const addPhrase = useCallback(
     (text, from = '', note = '') => {
@@ -115,7 +125,7 @@ export default function App() {
           history={sessions}
           settings={settings}
           llmReady={llmReady}
-          onSpeak={(t) => speak(t)}
+          onSpeak={handleSpeak}
           onAddPhrase={addPhrase}
           onGotoPractice={() => setView('home')}
           onClear={() => setSessions([])}
@@ -133,7 +143,7 @@ export default function App() {
           phrases={phrases}
           onAdd={addPhrase}
           onRemove={removePhrase}
-          onSpeak={(t) => speak(t)}
+          onSpeak={handleSpeak}
         />
       )
     }
@@ -141,6 +151,7 @@ export default function App() {
     return (
       <Home
         onStart={startScenario}
+        onStartCall={() => setCallOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
         llmReady={llmReady}
         history={sessions}
@@ -181,6 +192,15 @@ export default function App() {
         >
           {toast}
         </div>
+      ) : null}
+
+      {callOpen ? (
+        <CallMode
+          settings={settings}
+          llmReady={llmReady}
+          onExit={() => setCallOpen(false)}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
       ) : null}
 
       <SettingsModal

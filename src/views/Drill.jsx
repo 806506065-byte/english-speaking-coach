@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { SCENARIOS, LEVEL_LABEL } from '../data/scenarios.js'
 import { compareSpeech } from '../lib/corrections.js'
-import { speak, useSpeechInput } from '../lib/speech.js'
+import { speakText, useSpeechInput } from '../lib/speech.js'
 
 export default function Drill({ settings, onAddPhrase }) {
   const [scenarioFilter, setScenarioFilter] = useState('all')
@@ -37,7 +37,7 @@ export default function Drill({ settings, onAddPhrase }) {
 
   const { supported, listening, interim, error, start, stop } = useSpeechInput({
     lang: 'en-US',
-    onFinal: (text) => {
+    onResult: (text) => {
       setSaid(text)
       setResult(compareSpeech(current?.text || '', text))
     },
@@ -124,10 +124,14 @@ export default function Drill({ settings, onAddPhrase }) {
             </div>
 
             <div className="composer-tools" style={{ marginTop: 16 }}>
-              <button type="button" className="btn" onClick={() => speak(current.text)}>
+              <button type="button" className="btn" onClick={() => speakText(current.text, settings)}>
                 🔊 听原句
               </button>
-              <button type="button" className="btn" onClick={() => speak(current.text, { rate: 0.7 })}>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => speakText(current.text, { ...settings, ttsRate: 0.7 })}
+              >
                 🐢 慢速
               </button>
               <button

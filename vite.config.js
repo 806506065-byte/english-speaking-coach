@@ -6,5 +6,7 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 5173,
+    // 端口固定，避免被占用时自动漂移导致地址变化
+    strictPort: true,
   },
 })

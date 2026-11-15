@@ -2,11 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import CoachRail from '../components/CoachRail.jsx'
 import { TAG_LABEL } from '../lib/corrections.js'
 import { llmTurn, localEvaluate, localNextLine } from '../lib/engine.js'
-import { speak, stopSpeaking, useSpeechInput } from '../lib/speech.js'
+import { FREE_TALK_GREETING } from '../lib/freetalk.js'
+import { speakText, stopSpeech, useSpeechInput } from '../lib/speech.js'
 import { uid } from '../lib/storage.js'
-
-const FREE_TALK_GREETING =
-  "Hi! I'm your English speaking coach. Let's just chat — tell me about your day, your work, or anything you'd like to talk about."
 
 function mergeList(primary, secondary, keyOf) {
   const out = []
@@ -72,21 +70,21 @@ export default function Practice({
 
   /* ---------------- 朗读 ---------------- */
 
-  const speakText = useCallback(
+  const sayText = useCallback(
     (text, id) => {
-      return speak(text, {
-        onStart: () => setSpeakingId(id),
-        onEnd: () => setSpeakingId((cur) => (cur === id ? null : cur)),
-      })
+      setSpeakingId(id)
+      return speakText(text, settings, {
+        onError: (msg) => setNotice(`朗读失败：${msg}`),
+      }).finally(() => setSpeakingId((cur) => (cur === id ? null : cur)))
     },
-    [],
+    [settings],
   )
 
   useEffect(() => {
     if (!settings.autoSpeak) return
     const first = messages[0]
-    if (first) speakText(first.text, first.id)
-    return () => stopSpeaking()
+    if (first) sayText(first.text, first.id)
+    return () => stopSpeech()
     // 仅在场景切换（组件用 key 重挂载）时朗读开场白
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -108,7 +106,7 @@ export default function Practice({
 
   const { supported: micSupported, listening, interim, error: micError, start, stop } = useSpeechInput({
     lang: 'en-US',
-    onFinal: handleFinalSpeech,
+    onResult: handleFinalSpeech,
   })
 
   /* ---------------- 消息工具 ---------------- */
@@ -120,14 +118,14 @@ export default function Practice({
       if (done) setFinished(true)
 
       if (settings.autoSpeak) {
-        speakText(text, id)
+        sayText(text, id)
       }
       if (autoListen && settings.autoListen && micSupported && !done) {
         window.setTimeout(() => start(), 400)
       }
       return id
     },
-    [micSupported, settings.autoListen, settings.autoSpeak, speakText, start],
+    [micSupported, sayText, settings.autoListen, settings.autoSpeak, start],
   )
 
   const attachEval = useCallback((id, ev) => {
@@ -277,14 +275,14 @@ export default function Practice({
   )
 
   const handleFinish = useCallback(() => {
-    stopSpeaking()
+    stopSpeech()
     persistSession()
     setFinished(true)
     onExit()
   }, [onExit, persistSession])
 
   const handleReplay = useCallback(() => {
-    stopSpeaking()
+    stopSpeech()
     savedRef.current = false
     turnsRef.current = []
     setTurns([])
@@ -296,8 +294,8 @@ export default function Practice({
     const first = totalBeats > 0 ? beats[0].ai : FREE_TALK_GREETING
     const id = uid()
     setMessages([{ id, role: 'ai', text: first }])
-    if (settings.autoSpeak) speakText(first, id)
-  }, [beats, settings.autoSpeak, speakText, totalBeats])
+    if (settings.autoSpeak) sayText(first, id)
+  }, [beats, sayText, settings.autoSpeak, totalBeats])
 
   const fillHint = useCallback(
     (hint) => {
@@ -375,7 +373,7 @@ export default function Practice({
                       <button
                         type="button"
                         className="icon-btn"
-                        onClick={() => speakText(m.text, m.id)}
+                        onClick={() => sayText(m.text, m.id)}
                         title="朗读这条"
                       >
                         {speakingId === m.id ? '🔈 朗读中' : '🔊 朗读'}
@@ -541,7 +539,7 @@ export default function Practice({
           sessionAvg={avgScore}
           turnCount={turns.length}
           upgrades={upgrades}
-          onSpeak={(t) => speakText(t, 'rail')}
+          onSpeak={(t) => sayText(t, 'rail')}
           onAddPhrase={onAddPhrase}
         />
       </div>

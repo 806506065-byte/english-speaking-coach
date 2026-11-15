@@ -4,3 +4,8 @@ dist-ssr
 *.local
 .DS_Store
 .vite
+
+# 本地运行产物
+serve.log
+*.timestamp-*.mjs
+

@@ -9,7 +9,7 @@ const FILTERS = [
   { id: 'advanced', label: '高阶' },
 ]
 
-export default function Home({ onStart, onOpenSettings, llmReady, history }) {
+export default function Home({ onStart, onStartCall, onOpenSettings, llmReady, history }) {
   const [filter, setFilter] = useState('all')
 
   const list = useMemo(
@@ -80,6 +80,24 @@ export default function Home({ onStart, onOpenSettings, llmReady, history }) {
       </div>
 
       <div className="grid-scenarios">
+        <button type="button" className="scenario-card" onClick={onStartCall}>
+          <div className="scenario-top">
+            <div className="scenario-emoji">📞</div>
+            <div>
+              <div className="scenario-name">自由通话</div>
+              <div className="scenario-name-en">Phone Call Mode</div>
+            </div>
+          </div>
+          <div className="scenario-blurb">
+            像打电话一样跟 AI 自由聊英语：AI 说完自动开始听你说，全程不用打字、不用点按钮。
+          </div>
+          <div className="scenario-meta">
+            <span className="tag advanced">真人音色</span>
+            <span className="tag ghost">不限轮次</span>
+            <span className="tag ghost">免 Key 可用</span>
+          </div>
+        </button>
+
         {list.map((s) => {
           const best = bestOf(s.id)
           return (
